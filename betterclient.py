@@ -1,14 +1,15 @@
 from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
 from random import randint
+from socket import SOL_SOCKET, SO_BROADCAST
 
 class BetterClient(DatagramProtocol):
     def __init__(self, host, port): 
         if host == "localhost" : 
             host = "127.0.0.1"
-        self.id =  127.0.0.1, port
+        self.id = host, port
         self.address = None
-        self.broadcast = '255.255.255.255', 8080
+        self.broadcast = '127.255.255.255', 8080
         self.server = '127.0.0.1', 9999
         self.initiator = False
         print("Working on id:", self.id)
@@ -62,12 +63,14 @@ class BetterClient(DatagramProtocol):
                 break
             # for client in clients:
             #     address =  '127.0.0.1', client
-            reactor.callInThread(self.send_broadcast_message, message, self.broadcast)
+            reactor.callInThread(self.send_broadcast_message, message)
 
-    def send_broadcast_message(self, message, address):
-        self.transport.write((message + "   this message is broadcast").encode('utf-8'), address)
+    def send_broadcast_message(self, message):
+        self.transport.write((message + "   this message is broadcast").encode('utf-8'), ('255.255.255.255', 8080))
 
     def startProtocol(self):
+        self.transport.socket.setsockopt(SOL_SOCKET, SO_BROADCAST, True)
+        self.transport.setBroadcastAllowed(True)
         self.transport.write("ready".encode('utf-8'), self.server)
 
 def parse_clients_string(clients_string):
