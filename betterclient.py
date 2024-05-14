@@ -1,15 +1,18 @@
 import socket
 import threading
 
+# Function to handle incoming messages
 def handle_client(receive_socket):
     while True:
         try:
             message, client_address = receive_socket.recvfrom(1024)
-            print(f"\nReceived message from {client_address}: {message.decode('utf-8')}")
+            print(f"\nReceived message from {client_address}: {message.decode('utf-8')}\n")
+            # Reprint the current prompt
             print_prompt()
         except Exception as e:
             print("Error:", e)
 
+# Function to send messages
 def send_message(send_socket):
     while True:
         print_prompt()
@@ -19,7 +22,8 @@ def send_message(send_socket):
                 print("Enter broadcast message: ", end='')
                 message = input()
                 message += "    [*]broadcast message"
-                send_socket.sendto(message.encode("utf-8"), ('255.255.255.255', my_port))
+                # Use broadcast address based on subnet
+                send_socket.sendto(message.encode("utf-8"), ('<broadcast>', my_port))
                 print("[*] Broadcast message sent.")
             except Exception as e:
                 print("Error:", e)
@@ -34,6 +38,7 @@ def send_message(send_socket):
             except Exception as e:
                 print("Error:", e)
 
+# Function to print the prompt
 def print_prompt():
     print("\nEnter recipient IP (or 'bc' for broadcast): ", end='')
 
